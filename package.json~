@@ -1,0 +1,11 @@
+{
+  "name": "ardemo",
+  "version": "1.0.0",
+  "description": "ar template",
+  "main": "index.js",
+  "author": "linh",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^3.8.1"
+  }
+}
