@@ -1,15 +1,25 @@
 {
-  "name": "ardemo",
+  "name": "artemplate",
   "version": "1.0.0",
   "description": "ar template",
   "main": "index.js",
   "author": "linh",
   "license": "MIT",
   "repository": {
-	"url": "https://github.com/anhmiuhv/artemplate",
-	"type": "git"
+    "url": "https://github.com/anhmiuhv/artemplate",
+    "type": "git"
+  },
+  "scripts": {
+    "watch": "webpack --watch -d"
   },
   "devDependencies": {
+    "ts-loader": "^3.1.1",
+    "typescript": "^2.6.1",
     "webpack": "^3.8.1"
+  },
+  "dependencies": {
+    "@types/three": "^0.84.30",
+    "three": "^0.88.0",
+    "three.ar.js": "^0.1.5"
   }
 }
