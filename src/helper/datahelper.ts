@@ -11,10 +11,7 @@ export class GraphInfo {
 
 	constructor(data: Vector3[]) {
 		this.vertices = data.map((d) => {
-			return d.clone().applyMatrix3( 
-				new Matrix3().set(0,0,1,
-								  0,1,0,
-								  1,0,0))
+			return d.clone();
 		})
 		this.lowx = this.lowy = this.lowz = 2000000000;
 		this.highx = this.highy = this.highz = -2000000000;

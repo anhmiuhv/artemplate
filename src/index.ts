@@ -53,8 +53,8 @@ function init(display: ARDisplay) {
   vrDisplay = display;
 
   // Turn on the debugging panel
-  var arDebug = new ARDebug(display);
-  document.body.appendChild(arDebug.getElement());
+  // var arDebug = new ARDebug(display);
+  // document.body.appendChild(arDebug.getElement());
 
   // Setup the three.js rendering environment
   renderer = new WebGLRenderer({ alpha: true });
@@ -84,7 +84,7 @@ function init(display: ARDisplay) {
   );
 
   let realdata = data.map((d) => {
-    return new Vector3(d.x,d.y,d.z);
+    return new Vector3(d.z,d.y,d.x);
   })
 
   // VRControls is a utility from three.js that applies the device's

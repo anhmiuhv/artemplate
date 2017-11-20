@@ -20,14 +20,14 @@
   		extensions: [ '.tsx', '.ts', '.js' ]
   	},
   	output: {
-  		filename: 'bundle.js',
+  		filename: 'scatterplot.js',
   		path: path.resolve(__dirname, 'dist')
   	}
     , plugins: [new HtmlWebpackPlugin({
       title: 'argraph',
       template: 'src/index.html'
       }),
-      new HtmlWebpackIncludeAssetsPlugin({ assets: ['index.css'], append: true }),
-      new CopyWebpackPlugin([{from :'src/css/index.css' , to: path.resolve(__dirname, 'dist')}])
+      new HtmlWebpackIncludeAssetsPlugin({ assets: ['scatterplot.css'], append: true }),
+      new CopyWebpackPlugin([{from :'src/css/scatterplot.css' , to: path.resolve(__dirname, 'dist')}])
       ]
   };
