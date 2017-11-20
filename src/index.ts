@@ -18,13 +18,14 @@ var planeback: Group, planebottom: Group, planetop: Group, planeright: Group, pl
 var topbottom: Group[], therest: Group[], allplane: Group[];
 var g: Group;
 
-var data: Vector3[] = [ new Vector3(2,2,2),
-                        new Vector3(-2,-9,-2),
-                        new Vector3(1,0,1),
-                        new Vector3(2,0,1),
-                        new Vector3(0,0,0),
-                        new Vector3(1,1,1)
-                      ];
+declare var data: any[];
+ // = [ new Vector3(2,2,2),
+ //                        new Vector3(-2,-9,-2),
+ //                        new Vector3(1,0,1),
+ //                        new Vector3(2,0,1),
+ //                        new Vector3(0,0,0),
+ //                        new Vector3(1,1,1)
+ //                      ];
 
 var colors = [
   new Color( 0xffffff ),
@@ -82,6 +83,10 @@ function init(display: ARDisplay) {
     display.depthFar
   );
 
+  let realdata = data.map((d) => {
+    return new Vector3(d.x,d.y,d.z);
+  })
+
   // VRControls is a utility from three.js that applies the device's
   // orientation/position to the perspective camera, keeping our
   // real world and virtual world in sync.
@@ -91,7 +96,7 @@ function init(display: ARDisplay) {
   window.addEventListener('resize', onWindowResize, false);
   canvas.addEventListener('touchstart', onClick, false);
 
-  const graphinfo = new GraphInfo(data);
+  const graphinfo = new GraphInfo(realdata);
   console.log(graphinfo);
   const graph = PlaneHelper.addplane(graphinfo.lowx,
                                       graphinfo.highx,
