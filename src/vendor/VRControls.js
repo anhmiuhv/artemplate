@@ -1,15 +1,16 @@
+import { Matrix4 } from 'three';
 /**
  * @author dmarcos / https://github.com/dmarcos
  * @author mrdoob / http://mrdoob.com
  */
 
-THREE.VRControls = function ( object, onError ) {
+const VRControls = function ( object, onError ) {
 
 	var scope = this;
 
 	var vrDisplay, vrDisplays;
 
-	var standingMatrix = new THREE.Matrix4();
+	var standingMatrix = new Matrix4();
 
 	var frameData = null;
 
@@ -147,3 +148,5 @@ THREE.VRControls = function ( object, onError ) {
 	};
 
 };
+
+export { VRControls };
