@@ -7,7 +7,6 @@
 
   module.exports = {
   	entry: './src/index.ts',
-  	devtool: 'inline-source-map',
   	module: {
   		rules: [
   		{
@@ -31,11 +30,4 @@
       new HtmlWebpackIncludeAssetsPlugin({ assets: ['index.css'], append: true }),
       new CopyWebpackPlugin([{from :'src/css/index.css' , to: path.resolve(__dirname, 'dist')}])
       ]
-    , devServer: {
-      contentBase: path.join(__dirname, "dist"),
-      compress: true,
-      port: 5000,
-      host: "0.0.0.0"
-    }
-
   };
