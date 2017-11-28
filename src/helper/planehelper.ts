@@ -45,7 +45,7 @@ class Graph {
 
 	getVerticesForDisplay(vertices: Vector3[]): Vector3[] {
 		return vertices.map((v) => {
-			return new Vector3(this.scalex(v.x), this.scaley(v.y), this.scalez(v.z) );
+			return new Vector3(this.scalez(v.z), this.scaley(v.y), this.scalex(v.x) );
 		});
 		
 	}
@@ -66,6 +66,10 @@ export namespace PlaneHelper {
 		let scalex = scaleLinear().domain([lowx, highx]);
 		let scaley = scaleLinear().domain([lowy, highy]);
 		let scalez = scaleLinear().domain([lowz, highz]);
+
+		// scalex = scaleLinear().domain([Math.min(...scalex.ticks(4)), Math.max(...scalex.ticks(4))]);
+		// scaley = scaleLinear().domain([Math.min(...scaley.ticks(4)), Math.max(...scaley.ticks(4))]);
+		// scalez = scaleLinear().domain([Math.min(...scalez.ticks(4)), Math.max(...scalez.ticks(4))]);
 
 		//Make the graph ratio look nice
 		let deltax = highx - lowx;
@@ -137,7 +141,9 @@ export namespace PlaneHelper {
 
 		graph.scale.multiplyScalar (0.5 / m);
 		const alldelta = [deltax, deltay, deltaz];
-		const allscale = [scalex, scaley, scalez];
+		const allscale = [scalex.range([ -deltax/2,  deltax/2]),
+						scaley.range([-deltay / 2, deltay / 2]),
+						 scalez.range([-deltaz / 2, deltaz / 2])];
 		const allplane = [planetop, planebottom, planeleft, planeright, planefront, planeback];
 		return new Graph(graph, alldelta, allscale, allplane);
 	}
@@ -168,7 +174,7 @@ export namespace PlaneHelper {
 		let yright = new Geometry();
 
 		let smalllinegeometry = new Geometry();
-		let rangex = scalex.range([ Math.ceil(-deltax/2),  Math.floor(deltax/2)])
+		let rangex = scalex.range([ -deltax/2,  deltax/2])
 		let ticksx = rangex.ticks(4)
 		for (let i of ticksx) {
 			smalllinegeometry.vertices.push(
@@ -179,7 +185,7 @@ export namespace PlaneHelper {
 			xbottom.vertices.push(new Vector3(rangex(i), deltay / -2, 0))
 		}
 
-		let rangey = scaley.range([Math.ceil(-deltay / 2), Math.floor(deltay / 2)])
+		let rangey = scaley.range([-deltay / 2, deltay / 2])
 		let ticksy = rangey.ticks(4);
 		for (let i of ticksy) {
 			smalllinegeometry.vertices.push(
@@ -263,14 +269,14 @@ export namespace PlaneHelper {
 			let count = 0;
 			for (let r of (xt.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksx[count])
-				sprite.position.copy(r).add(new Vector3(0,0.8,0));
+				sprite.position.copy(r).add(new Vector3(0.2,0.8,0));
 				xt.add(sprite);
 				count++
 			}
 			count = 0;
 			for (let r of (xb.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksx[count])
-				sprite.position.copy(r).add(new Vector3(0,-0.8,0));
+				sprite.position.copy(r).add(new Vector3(-0.2,-0.8,0));
 				xb.add(sprite);
 				count++
 			}
@@ -283,14 +289,14 @@ export namespace PlaneHelper {
 			const ticksy = yl.userData;
 			for (let r of (yl.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksy[count])
-				sprite.position.copy(r).add(new Vector3(-0.1,0,0.5));
+				sprite.position.copy(r).add(new Vector3(-0.8,0.2,0));
 				yl.add(sprite);
 				count++
 			}
 			count = 0;
 			for (let r of (yr.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksy[count])
-				sprite.position.copy(r).add(new Vector3(0.1,0,0.5));
+				sprite.position.copy(r).add(new Vector3(0.8,0.2,0));
 				yr.add(sprite);
 				count++
 			}
