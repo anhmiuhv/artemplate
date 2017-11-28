@@ -168,7 +168,7 @@ export namespace PlaneHelper {
 		let yright = new Geometry();
 
 		let smalllinegeometry = new Geometry();
-		let rangex = scalex.range([ Math.round(-deltax/2),  Math.round(deltax/2)])
+		let rangex = scalex.range([ Math.ceil(-deltax/2),  Math.floor(deltax/2)])
 		let ticksx = rangex.ticks(4)
 		for (let i of ticksx) {
 			smalllinegeometry.vertices.push(
@@ -179,7 +179,7 @@ export namespace PlaneHelper {
 			xbottom.vertices.push(new Vector3(rangex(i), deltay / -2, 0))
 		}
 
-		let rangey = scaley.range([Math.round(-deltay / 2), Math.round(deltay / 2)])
+		let rangey = scaley.range([Math.ceil(-deltay / 2), Math.floor(deltay / 2)])
 		let ticksy = rangey.ticks(4);
 		for (let i of ticksy) {
 			smalllinegeometry.vertices.push(

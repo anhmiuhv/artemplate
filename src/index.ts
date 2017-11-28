@@ -1,4 +1,4 @@
-import { WebGLRenderer, Scene, Color, Group, Vector3, PointsMaterial, Geometry, Points } from 'three'
+import { WebGLRenderer, Sprite, Scene, Color, Group, Vector3, PointsMaterial, Geometry, Points } from 'three'
 import { VRControls } from './vendor/VRControls'
 import { ARDisplay, ARDebug, ARUtils, ARPerspectiveCamera, ARView } from 'three.ar.js'
 import { PlaneHelper } from './helper/planehelper'
@@ -13,13 +13,16 @@ var canvas: HTMLCanvasElement;
 var camera: ARPerspectiveCamera;
 var scene: Scene;
 var renderer: WebGLRenderer;
+var text: HTMLCollectionOf<Element>;
+
+var started = true;
 
 var planeback: Group, planebottom: Group, planetop: Group, planeright: Group, planeleft: Group, planefront: Group;
 var topbottom: Group[], therest: Group[], allplane: Group[];
 var g: Group;
 
 declare var data: any[];
- // = [ new Vector3(2,2,2),
+ // var data = [ new Vector3(2,2,2),
  //                        new Vector3(-2,-9,-2),
  //                        new Vector3(1,0,1),
  //                        new Vector3(2,0,1),
@@ -63,13 +66,13 @@ function init(display: ARDisplay) {
   renderer.autoClear = false;
   canvas = renderer.domElement;
   document.body.appendChild(canvas);
-  scene = new Scene();
+  scene = new Scene()
 
   // Creating the ARView, which is the object that handles
   // the rendering of the camera stream behind the three.js
   // scene
   arView = new ARView(display, renderer);
-
+  text = document.getElementsByClassName("calibrate");
   // The ARPerspectiveCamera is very similar to THREE.PerspectiveCamera,
   // except when using an AR-capable browser, the camera uses
   // the projection matrix provided from the device, so that the
@@ -154,9 +157,13 @@ function update() {
 
   // Update our perspective camera's positioning
   vrControls.update();
+
+  hideTextbox();
+
   var debug = false;
   if (i % 300 == 0) {
     debug = true
+    
   }
   //hide plane according to the camera
   AnimationHelper.hidePlane(allplane, camera);
@@ -174,6 +181,28 @@ function update() {
 
   i++;
 
+}
+
+function hideTextbox() {
+   if (started) {
+    let vrframedata = new VRFrameData();
+    vrDisplay.getFrameData(vrframedata);
+    console.log(vrframedata.pose);
+    const pose = vrframedata && vrframedata.pose && vrframedata.pose.position;
+    // Ensure we have a valid pose; while the pose SHOULD be null when not
+    // provided by the VRDisplay, on WebARonARCore, the xyz values of position
+    // are all 0 -- mark this as an invalid pose
+    const isValidPose = pose &&
+                        typeof pose[0] === 'number' &&
+                        typeof pose[1] === 'number' &&
+                        typeof pose[2] === 'number' &&
+                        !(pose[0] === 0 && pose[1] === 0 && pose[2] === 0);
+    if (isValidPose) {
+      started = false;
+      (<HTMLElement>text.item(0)).style.visibility = 'hidden'; 
+    }
+
+  }
 }
 
 /**

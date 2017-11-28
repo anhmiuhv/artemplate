@@ -13,3 +13,18 @@ canvas {
   top: 0;
   left: 0;
 }
+
+.calibrate {
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  left: 50%;
+  font-size: large;
+  width: 250px;
+  margin: 1em auto;
+  margin-left: -125px;
+  display: block;
+  background-color: #000;
+  color: #fff;
+  z-index: 10;
+}
