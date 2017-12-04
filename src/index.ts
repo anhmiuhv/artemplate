@@ -1,9 +1,15 @@
-import { WebGLRenderer, Sprite, Scene, Color, Group, Vector3, PointsMaterial, Geometry, Points } from 'three'
+import {
+  Material, Raycaster, Object3D, Vector2, MeshLambertMaterial, Mesh, SphereGeometry, AmbientLight
+  , DirectionalLight, WebGLRenderer, Scene, Color, Group, Vector3, PointsMaterial
+  , Geometry, Points, PerspectiveCamera
+} from 'three'
 import { VRControls } from './vendor/VRControls'
 import { ARDisplay, ARDebug, ARUtils, ARPerspectiveCamera, ARView } from 'three.ar.js'
-import { PlaneHelper } from './helper/planehelper'
+import { PlaneHelper, Graph } from './helper/planehelper'
 import { GraphInfo } from './helper/datahelper'
 import { AnimationHelper } from './helper/animatehelper'
+import makeTextSprite from './helper/texthelper';
+
 
 var vrDisplay: ARDisplay;
 var vrControls: VRControls;
@@ -14,6 +20,7 @@ var camera: ARPerspectiveCamera;
 var scene: Scene;
 var renderer: WebGLRenderer;
 var text: HTMLCollectionOf<Element>;
+var graph: Graph;
 
 var started = true;
 
@@ -22,13 +29,10 @@ var topbottom: Group[], therest: Group[], allplane: Group[];
 var g: Group;
 
 declare var data: any[];
- // var data = [ new Vector3(2,2,2),
- //                        new Vector3(-2,-9,-2),
- //                        new Vector3(1,0,1),
- //                        new Vector3(2,0,1),
- //                        new Vector3(0,0,0),
- //                        new Vector3(1,1,1)
- //                      ];
+//  var data = [ new Vector3(2,2,2), new Vector3(-2,-9,-2), new Vector3(1,0,1), new Vector3(2,0,1), new Vector3(0,0,0), new Vector3(1,1,1) ];
+
+declare var renderSphere: boolean;
+// var renderSphere = true;
 
 var colors = [
   new Color( 0xffffff ),
@@ -101,7 +105,7 @@ function init(display: ARDisplay) {
 
   const graphinfo = new GraphInfo(realdata);
   console.log(graphinfo);
-  const graph = PlaneHelper.addplane(graphinfo.lowx,
+  graph = PlaneHelper.addplane(graphinfo.lowx,
                                       graphinfo.highx,
                                       graphinfo.lowy,
                                       graphinfo.highy,
@@ -119,20 +123,37 @@ function init(display: ARDisplay) {
   g = graph.graph;
   allplane = topbottom.concat( therest );
 
-
   graph.graph.translateZ(-1);
   graph.graph.translateY(-0.5);
   graph.graph.rotateY(Math.PI / 4);
 
-  PlaneHelper.addxzaxis(topbottom);
-  PlaneHelper.addyaxis(therest);
+  PlaneHelper.addxzaxis(topbottom, graph.scaleFactor);
+  PlaneHelper.addyaxis(therest, graph.scaleFactor);
+  if (renderSphere) {
+    var directionalLight = new DirectionalLight(0xffffff, 0.5);
+    scene.add(directionalLight);
+    var light = new AmbientLight(0x404040); // soft white AmbientLight
+    scene.add(light);
+    var geometry = new SphereGeometry(0.1, 10, 10, 0, Math.PI * 2, 0, Math.PI * 2);
+    var material = new MeshLambertMaterial({ color: 0xd3d3d3 });
 
-  let geometry = new Geometry();
-  geometry.vertices.push(...graph.getVerticesForDisplay(graphinfo.vertices));
-  let mat = new PointsMaterial({ size:0.05, color: 0x7FDBFF });
-  let particles = new Points( geometry , mat );
-  graph.graph.add(particles);
-
+    let pos = graph.getVerticesForDisplay(graphinfo.vertices);
+    var count = 0;
+    for (let i of pos) {
+      var mesh = new Mesh(geometry, material);
+      mesh.name = "sphere " + count;
+      mesh.position.set(i.x, i.y, i.z);
+      mesh.userData = Object.assign(mesh, mesh.userData, { oriData: graphinfo.vertices[count] });
+      graph.graph.add(mesh);
+      count++;
+    }
+  } else {
+    let geometry = new Geometry();
+    geometry.vertices.push(...graph.getVerticesForDisplay(graphinfo.vertices));
+    let mat = new PointsMaterial({ size:0.05, color: 0x7FDBFF });
+    let particles = new Points( geometry , mat );
+    graph.graph.add(particles);
+  }
 
   // Kick off the render loop!
   update();
@@ -216,37 +237,41 @@ function onWindowResize () {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+var mouse = new  Vector2();
+var INTERSECTED: Mesh;
 /**
  * When clicking on the screen, fire a ray from where the user clicked
  * on the screen and if a hit is found, place a cube there.
  */
 function onClick (e: TouchEvent) {
-  // If we don't have a touches object, abort
-  // TODO: is this necessary?
-  if (!e.touches[0]) {
-    return;
+  mouse.x = (e.touches[0].pageX / window.innerWidth) * 2 - 1;
+  mouse.y = - (e.touches[0].pageY / window.innerHeight) * 2 + 1;
+  
+
+  // find intersections
+  let raycaster = new Raycaster();
+  raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects(graph.graph.children);
+  console.log(intersects);
+  hideText();
+
+  if (intersects.length > 0
+    && INTERSECTED != intersects[0].object && 'oriData' in intersects[0].object.userData) {
+    INTERSECTED = intersects[0].object as Mesh;
+    const data = INTERSECTED.userData.oriData;
+    if (INTERSECTED.children.length > 0) {
+      INTERSECTED.children[0].visible = true;
+      return;
+    }
+    const sprite = makeTextSprite(`x:${data.x}, y:${data.y}, z:${data.z}`, { fontsize: 12, scaleFactor: graph.scaleFactor, depthTest: false });
+    sprite.position.add(new Vector3(0, 0.2, 0));
+    INTERSECTED.add(sprite);
+
+  } else {
+    INTERSECTED = null;
   }
-
-  // Inspect the event object and generate normalize screen coordinates
-  // (between 0 and 1) for the screen position.
-  var x = e.touches[0].pageX / window.innerWidth;
-  var y = e.touches[0].pageY / window.innerHeight;
-
-  // Send a ray from the point of click to the real world surface
-  // and attempt to find a hit. `hitTest` returns an array of potential
-  // hits.
-  var hits = vrDisplay.hitTest(x, y);
-
-  // If a hit is found, just use the first one
-  if (hits && hits.length) {
-    var hit = hits[0];
-    // Use the `placeObjectAtHit` utility to position
-    // the cube where the hit occurred
-    // THREE.ARUtils.placeObjectAtHit(sphere,  // The object to place
-    //                                hit,   // The VRHit object to move the cube to
-    //                                1,     // Easing value from 0 to 1; we want to move
-    //                                       // the cube directly to the hit position
-    //                                true); // Whether or not we also apply orientation
-
+  function hideText() {
+    if (INTERSECTED)
+      INTERSECTED.children.length > 0 && (INTERSECTED.children[0].visible = false);
   }
 }
