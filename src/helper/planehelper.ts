@@ -113,7 +113,7 @@ export namespace PlaneHelper {
 		const planeright = rl[0];
 		const planeleft = rl[1];
 		rl.forEach(function (e) {
-			e.rotation.y = Math.PI / 2;
+			e.rotation.y = -Math.PI / 2;
 		})
 		graph.add(...rl);
 
@@ -252,7 +252,7 @@ export namespace PlaneHelper {
 			count = 0;
 			for (let r of (yr.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(tick[count], { scaleFactor: scaleFactor })
-				sprite.position.copy(r).add(new Vector3(0.4 * invert, 0, 0).multiplyScalar(invert));
+				sprite.position.copy(r).add(new Vector3(0.4, 0, 0).multiplyScalar(invert));
 				yr.add(sprite);
 				count++
 			}
