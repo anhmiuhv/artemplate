@@ -132,9 +132,9 @@ function init(display: ARDisplay) {
   if (renderSphere) {
     var directionalLight = new DirectionalLight(0xffffff, 0.5);
     scene.add(directionalLight);
-    var light = new AmbientLight(0x404040); // soft white AmbientLight
+    var light = new AmbientLight(0xD3B4B4, 0.8 ); // soft white AmbientLight
     scene.add(light);
-    var geometry = new SphereGeometry(0.1, 10, 10, 0, Math.PI * 2, 0, Math.PI * 2);
+    var geometry = new SphereGeometry(0.1, 20, 20, 0, Math.PI * 2, 0, Math.PI * 2);
     var material = new MeshLambertMaterial({ color: 0xd3d3d3 });
 
     let pos = graph.getVerticesForDisplay(graphinfo.vertices);
