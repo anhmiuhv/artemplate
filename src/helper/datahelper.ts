@@ -1,4 +1,5 @@
 import { Vector3, Matrix3 } from 'three'
+import  { scaleLinear } from 'd3-scale';
 
 export class GraphInfo {
 	lowx: number;
@@ -24,12 +25,6 @@ export class GraphInfo {
 			this.highz = Math.max(this.highz, i.z);
 		}
 
-		this.lowx = Math.floor(this.lowx);
-		this.lowy = Math.floor(this.lowy);
-		this.lowz = Math.floor(this.lowz);
-		this.highx = Math.ceil(this.highx);
-		this.highy = Math.ceil(this.highy);
-		this.highz = Math.ceil(this.highz);
 		if (this.highx === this.lowx) {
 			this.highx += 1;
 			this.lowx -= 1;
@@ -43,4 +38,24 @@ export class GraphInfo {
 			this.lowz -= 1;
 		}
 	}
+
+	getAllLimits() : number[] {
+		return [this.lowx, this.highx, this.lowy, this.highy, this.lowz, this.highz]
+	}
+
+	scaler(value: number, axis = Axis.x): number {
+		switch (axis) {
+			case Axis.x:
+				return scaleLinear().domain([this.lowx, this.highx]).range([0,1])(value)
+			case Axis.y:
+				return scaleLinear().domain([this.lowy, this.highy]).range([0, 1])(value)
+			case Axis.z:
+				return scaleLinear().domain([this.lowz, this.highz]).range([0, 1])(value)
+			default:
+				return scaleLinear().domain([this.lowx, this.highx]).range([0,1])(value)
+		}
+	}
 } 
+export enum Axis {
+	x,y,z
+}
