@@ -1,4 +1,4 @@
-import { Mesh, Vector2, Raycaster, Camera, Vector3 } from 'three'
+import { Mesh, Vector2, Raycaster, Camera, Vector3, Quaternion, Object3D } from 'three'
 import makeTextSprite from './texthelper'
 import { Graph } from "./planehelper"
 
@@ -69,10 +69,12 @@ export namespace EventHelper {
         }
 
         export class ZoomableThreeEvent {
-            evCache: ThreeEvent[] = [];
+            
             prevDiff: number;
+            prevPos: Vector2;
             camera: Camera;
             graph: Graph;
+            domElement: HTMLElement | Document;
             constructor(camera: Camera, graph: Graph) {
                 this.camera = camera;
                 this.graph = graph;
@@ -86,9 +88,11 @@ export namespace EventHelper {
                     switch (e.touches.length) {
                         case 1:
                             generalCallback(e);
+                            this.prevPos = new Vector2(e.touches[0].clientX, e.touches[0].clientY);
                             break;
                         case 2:
-                            this.evCache.push(e);
+                            this.prevDiff = Math.sqrt(Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2)) 
+                            break;
                         default:
                             // code...
                             break;
@@ -98,55 +102,54 @@ export namespace EventHelper {
 
             generateOnMove(this: ZoomableThreeEvent) {
                 return (e: ThreeEvent) => {
-                     for (var i = 0; i < this.evCache.length; i++) {
-                       if (e.pointerId == this.evCache[i].pointerId) {
-                          this.evCache[i] = e;
-                       break;
-                       }
+                     if (e.touches.length == 1) {
+                         var element = this.domElement === document ? this.domElement.body : this.domElement as HTMLElement;
+                         element = element || document.body;
+                         let deltaX = Math.abs(e.touches[0].clientX - this.prevPos.x) / (element.clientWidth) 
+                         if (e.touches[0].clientX > this.prevPos.x) {
+
+                             this.graph.graph.rotateY(100/180 * Math.PI * deltaX)
+                         } else {
+                             this.graph.graph.rotateY(-100/180 * Math.PI * deltaX)
+                         }
+                         let deltaY = Math.abs(e.touches[0].clientY - this.prevPos.y) / (element.clientHeight) 
+
+                         if (e.touches[0].clientY > this.prevPos.y) {
+                             this.graph.graph.translateY(-1 * deltaY)
+                         } else {
+                             this.graph.graph.translateY(1 * deltaY)
+                         }
+                         this.prevPos = new Vector2(e.touches[0].clientX, e.touches[0].clientY);
+                        
                      }
 
-                     if (this.evCache.length == 2) {
+                     if (e.touches.length == 2) {
                        // Calculate the distance between the two pointers
-                       var curDiff = Math.abs(this.evCache[0].clientX - this.evCache[1].clientX);
+                       var curDiff = Math.sqrt(Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2));
 
                        if (this.prevDiff > 0) {
                          if (curDiff > this.prevDiff) {
-                           // The distance between the two pointers has increased
-                           console.log("Pinch moving OUT -> Zoom in", e);
+                             let delta = curDiff - this.prevDiff;
+                             console.log(delta);
+                           this.graph.graph.scale.addScalar(0.01);
                          }
                          if (curDiff < this.prevDiff) {
                            // The distance between the two pointers has decreased
-                           console.log("Pinch moving IN -> Zoom out",e);
+                           this.graph.graph.scale.addScalar(-0.01);
                          }
                        }
-
-                       // Cache the distance for the next move event 
                        this.prevDiff = curDiff;
+                       
                      }
                 }
             }
 
             generateOnUp(this: ZoomableThreeEvent) {
                 return (e: ThreeEvent) => {
-                      console.log(e.type, e);
-                      // Remove this pointer from the cache and reset the target's
-                      // background and border
-                      this.remove_event(e);
-                   
                      
-                      // If the number of pointers down is less than two then reset diff tracker
-                      if (this.evCache.length < 2) this.prevDiff = -1;
                 }
             }
 
-            remove_event(ev: ThreeEvent) {
-             // Remove this event from the target's cache
-             for (var i = 0; i < this.evCache.length; i++) {
-               if (this.evCache[i].pointerId == ev.pointerId) {
-                 this.evCache.splice(i, 1);
-                 break;
-               }
-             }
-}
+
     }
 }

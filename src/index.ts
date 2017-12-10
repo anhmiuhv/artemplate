@@ -25,11 +25,11 @@ var graph: Graph;
 var started = true;
 
 
-// declare var data: {x: number, y: number, z: number}[];
- var data = [ new Vector3(2,2,2), new Vector3(-2,-9,-2), new Vector3(1,0,1), new Vector3(2,0,1), new Vector3(0,0,0), new Vector3(1,1,1) ];
+declare var data: {x: number, y: number, z: number}[];
+ // var data = [ new Vector3(2,2,2), new Vector3(-2,-9,-2), new Vector3(1,0,1), new Vector3(2,0,1), new Vector3(0,0,0), new Vector3(1,1,1) ];
 
-// declare var renderSphere: boolean;
-var renderSphere = true;
+declare var renderSphere: boolean;
+// var renderSphere = true;
 
 var colors = [
 new Color( 0xffffff ),
@@ -91,17 +91,18 @@ new Color( 0x000000 )
   
   // Bind our event handlers
   window.addEventListener('resize', onWindowResize, false);
-  const eventhandler = new EventHelper.ZoomableThreeEvent(camera, graph);
-  canvas.addEventListener('touchstart', eventhandler.genrateOnTouch() , false);
-  canvas.addEventListener('touchmove', eventhandler.generateOnMove() , false);
-  canvas.addEventListener('touchend', eventhandler.generateOnUp() , false);
-
+  
   const graphinfo = new GraphInfo(data.map((v)=> {
       return new Vector3(v.z, v.y, v.z);
   }));
   console.log(graphinfo);
   graph = PlaneHelper.addplane( graphinfo );
   graph.injectScene(scene);
+  const eventhandler = new EventHelper.ZoomableThreeEvent(camera, graph);
+  // const checkone = new EventHelper.GeneralThreeEvent(camera, graph)
+  canvas.addEventListener('touchstart', eventhandler.genrateOnTouch() , false);
+  canvas.addEventListener('touchmove', eventhandler.generateOnMove() , false);
+  canvas.addEventListener('touchend', eventhandler.generateOnUp() , false);
 
 
   graph.graph.translateZ(-1);

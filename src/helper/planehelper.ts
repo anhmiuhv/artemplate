@@ -48,7 +48,7 @@ export class Graph {
 
 	getVerticesForDisplay(vertices: Vector3[]): Vector3[] {
 		return vertices.map((v) => {
-			return new Vector3(this.scalez(v.z), this.scaley(v.y), this.scalex(v.x) );
+			return new Vector3(this.scalex(v.x), this.scaley(v.y), this.scalez(v.z) );
 		});
 		
 	}
@@ -255,7 +255,7 @@ export namespace PlaneHelper {
 	 *
 	 */
 	
-	export function addyaxis(therest: Group[], scaleFactor: number) {
+	export function addyaxis(therest: Group[], scaleFactor: number, title = "y") {
 		var invert = (1 / scaledelta)  / scaleFactor;
 		for (let i of therest) {
 			const yl = i.getObjectByName("yleft") as Points;
@@ -264,19 +264,32 @@ export namespace PlaneHelper {
 			const lengthyr = (yr.geometry as Geometry).vertices.length
 			let count = 0;
 			let tick = yl.userData;
+			let average = new Vector3();
 			for (let r of (yl.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(tick[count], {scaleFactor: scaleFactor})
 				sprite.position.copy(r).add(new Vector3(-0.4,0,0).multiplyScalar(invert));
+				average.add(sprite.position);
 				yl.add(sprite);
 				count++
 			}
+			average.multiplyScalar(1 / lengtyl).add(new Vector3(-0.4,0,0).multiplyScalar(invert));
+			let sprite = makeTextSprite(title, {scaleFactor: scaleFactor})
+			sprite.position.copy(average);
+			yl.add(sprite);
+
+			average = new Vector3();
 			count = 0;
 			for (let r of (yr.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(tick[count], {scaleFactor: scaleFactor})
 				sprite.position.copy(r).add(new Vector3(0.4,0,0).multiplyScalar(invert));
+				average.add(sprite.position);
 				yr.add(sprite);
 				count++
 			}
+			average.multiplyScalar(1 / lengthyr).add(new Vector3(0.4,0,0).multiplyScalar(invert));
+			sprite = makeTextSprite(title, {scaleFactor: scaleFactor})
+			sprite.position.copy(average);
+			yr.add(sprite);
 		}
 	}
 
@@ -285,28 +298,45 @@ export namespace PlaneHelper {
 	 * generate label for the x and z axis. Take in the top and bottom plane
 	 *
 	 */
-	export function addxzaxis(topbottom: Group[], scaleFactor: number) {
-		var invert = (1 / scaledelta)  / scaleFactor;
+	export function addxzaxis(topbottom: Group[], scaleFactor: number, title = {x: 'x', z:'z'}) {
+		const invert = (1 / scaledelta)  / scaleFactor;
+		let averageOut = (average: Vector3, length: number, offset: Vector3, title: string) => {
+			average.multiplyScalar(1 / length).add(offset.multiplyScalar(invert));
+			let sprite = makeTextSprite(title, {scaleFactor: scaleFactor})
+			sprite.position.copy(average);
+			return sprite;
+		}
+
 		for (let i of topbottom) {
 			const xt = i.getObjectByName("xtop") as Points;
 			const xb = i.getObjectByName("xbottom") as Points;
 			const lengtxt = (xt.geometry as Geometry).vertices.length
 			const lengthxb = (xb.geometry as Geometry).vertices.length
 			const ticksx = xt.userData;
+			let average = new Vector3();
 			let count = 0;
 			for (let r of (xt.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksx[count], {scaleFactor: scaleFactor})
 				sprite.position.copy(r).add(new Vector3(0,0.3,0.3).multiplyScalar(invert));
 				xt.add(sprite);
+				average.add(sprite.position);
 				count++
 			}
+			let sprite = averageOut(average, lengtxt, new Vector3(0,0.3,0.3), title.x);
+			xt.add(sprite);
+
 			count = 0;
+			average = new Vector3();
+
 			for (let r of (xb.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksx[count], {scaleFactor: scaleFactor})
 				sprite.position.copy(r).add(new Vector3(0,-0.3,0.3).multiplyScalar(invert));
 				xb.add(sprite);
+				average.add(sprite.position);
 				count++
 			}
+			sprite = averageOut(average, lengthxb, new Vector3(0,-0.3,0.3), title.x)
+			xb.add(sprite);
 
 			const yl = i.getObjectByName("yleft") as Points;
 			const yr = i.getObjectByName("yright") as Points;
@@ -314,19 +344,29 @@ export namespace PlaneHelper {
 			const lengthyr = (yr.geometry as Geometry).vertices.length
 			count = 0;
 			const ticksy = yl.userData;
+			average = new Vector3();
 			for (let r of (yl.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksy[count], {scaleFactor: scaleFactor})
 				sprite.position.copy(r).add(new Vector3(-0.3,0,0.3).multiplyScalar(invert));
+				average.add(sprite.position);
 				yl.add(sprite);
 				count++
 			}
+			sprite = averageOut(average, lengtyl, new Vector3(-0.3,0,0.3), title.z)
+			yl.add(sprite);
+
 			count = 0;
+			average = new Vector3();
 			for (let r of (yr.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksy[count], {scaleFactor: scaleFactor})
 				sprite.position.copy(r).add(new Vector3(0.3,0,0.3).multiplyScalar(invert));
 				yr.add(sprite);
+				average.add(sprite.position);
 				count++
 			}
+			sprite = averageOut(average, lengthyr, new Vector3(0.3,0,0.3), title.z)
+			yr.add(sprite);
+
 
 		}
 	}

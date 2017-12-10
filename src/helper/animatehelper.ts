@@ -4,12 +4,11 @@ import { Graph } from './planehelper'
 export namespace AnimationHelper {
 	export function hideAxis(graph: Graph, camera: Camera) {
 		let all = graph.allplane();
-		for (let i of [0,2,4]) {
-			hideAxisHelper(all.slice(i, i + 2), camera);
-		}
+		hidex(all.slice(0, 2), camera);
+		hidey(all.slice(2, 6), camera);
 	}
 
-	function hideAxisHelper(topbottom: Object3D[], camera: Camera, debug: boolean = false) {
+	function hidex(topbottom: Object3D[], camera: Camera, debug: boolean = false) {
 		let vis  = topbottom.filter (function(e) { return e.visible})[0];
 		let xt = vis.getObjectByName('xtop') as Points;
 		let xb = vis.getObjectByName('xbottom') as Points;
@@ -44,6 +43,40 @@ export namespace AnimationHelper {
 				yl.visible = true;
 			yr.visible = !yl.visible;
 		}
+	}
+
+	function hidey(therest: Object3D[], camera: Camera) {
+		const nohidden = therest.filter ((e) => { return e.visible });
+
+		const axis: Points[] = [];
+		for (var i of nohidden) {
+			axis.push(
+				i.getObjectByName('yleft') as Points
+				, i.getObjectByName('yright') as Points
+				)
+		}
+		let mi = 100000;
+		let count = -1;
+		const vertices = axis.map((x,i) => { 
+			return (x.geometry as Geometry).vertices[0].clone()
+			.applyMatrix4(axis[i].matrixWorld)
+			.project(camera)
+		})
+
+		for (let i = 0; i < vertices.length; i++) {
+			if (mi > vertices[i].x) {
+				mi = vertices[i].x;
+				count = i;
+			}
+		}
+
+		for (let i = 0; i < axis.length; i++) {
+			if (i == count) 
+				axis[i].visible = true;
+			else 
+				axis[i].visible = false;
+		}
+
 	}
 
 
