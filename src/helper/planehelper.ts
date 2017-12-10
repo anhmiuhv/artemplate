@@ -48,7 +48,7 @@ export class Graph {
 
 	getVerticesForDisplay(vertices: Vector3[]): Vector3[] {
 		return vertices.map((v) => {
-			return new Vector3(this.scalex(v.x), this.scaley(v.y), this.scalez(v.z) );
+			return new Vector3(this.scalez(v.z), this.scaley(v.y), this.scalex(v.x) );
 		});
 		
 	}

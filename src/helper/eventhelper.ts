@@ -91,7 +91,7 @@ export namespace EventHelper {
                             this.prevPos = new Vector2(e.touches[0].clientX, e.touches[0].clientY);
                             break;
                         case 2:
-                            this.prevDiff = Math.sqrt(Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2)) 
+                            this.prevDiff = Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2) 
                             break;
                         default:
                             // code...
@@ -125,17 +125,16 @@ export namespace EventHelper {
 
                      if (e.touches.length == 2) {
                        // Calculate the distance between the two pointers
-                       var curDiff = Math.sqrt(Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2));
+                       var curDiff = Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2);
 
                        if (this.prevDiff > 0) {
                          if (curDiff > this.prevDiff) {
-                             let delta = curDiff - this.prevDiff;
-                             console.log(delta);
-                           this.graph.graph.scale.addScalar(0.01);
+                        
+                           this.graph.graph.scale.multiplyScalar(1.05);
                          }
                          if (curDiff < this.prevDiff) {
                            // The distance between the two pointers has decreased
-                           this.graph.graph.scale.addScalar(-0.01);
+                           this.graph.graph.scale.multiplyScalar(0.95);
                          }
                        }
                        this.prevDiff = curDiff;

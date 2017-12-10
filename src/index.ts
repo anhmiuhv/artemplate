@@ -93,7 +93,7 @@ new Color( 0x000000 )
   window.addEventListener('resize', onWindowResize, false);
   
   const graphinfo = new GraphInfo(data.map((v)=> {
-      return new Vector3(v.z, v.y, v.z);
+      return new Vector3(v.z, v.y, v.x);
   }));
   console.log(graphinfo);
   graph = PlaneHelper.addplane( graphinfo );

@@ -24,8 +24,9 @@
   		path: path.resolve(__dirname, 'dist')
   	}
     , plugins: [new HtmlWebpackPlugin({
-      title: 'argraph',
-      template: 'src/index.html'
+        title: 'argraph',
+        template: 'src/index.html',
+        inject: true
       }),
       new HtmlWebpackIncludeAssetsPlugin({ assets: ['scatterplot.css'], append: true }),
       new CopyWebpackPlugin([{from :'src/css/scatterplot.css' , to: path.resolve(__dirname, 'dist')}])
