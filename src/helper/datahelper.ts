@@ -55,7 +55,30 @@ export class GraphInfo {
 				return scaleLinear().domain([this.lowx, this.highx]).range([0,1])(value)
 		}
 	}
+}
+
+export class SurfaceInfo extends GraphInfo{
+	height: number;
+	width: number;
+	
+	/**
+	 * create a surface info object from height map matrix
+	 * @param surface height map matrix
+	 */
+	constructor (surface: number[][]) {
+		var data: Vector3[] = [];
+		for (let x = 0; x < surface.length; x++) {
+    		for (let y = 0; y < surface[0].length; y++  ) {
+        		data.push(new Vector3(y, surface[x][y], x))
+    		}
+		}
+		super(data);
+		this.height = surface.length;
+		this.width = surface[0].length;
+	}
+
 } 
+
 export enum Axis {
 	x,y,z
 }
