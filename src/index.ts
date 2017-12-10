@@ -4,7 +4,7 @@ import {
 import { VRControls } from './vendor/VRControls'
 import { ARDisplay, ARDebug, ARUtils, ARPerspectiveCamera, ARView } from 'three.ar.js'
 import { PlaneHelper, Graph } from './helper/planehelper'
-import { GraphInfo } from './helper/datahelper'
+import { SurfaceInfo } from './helper/datahelper'
 import { AnimationHelper } from './helper/animatehelper'
 import makeTextSprite from './helper/texthelper';
 import { RenderHelper } from './helper/renderhelper'
@@ -25,11 +25,23 @@ var graph: Graph;
 var started = true;
 
 
-declare var data: {x: number, y: number, z: number}[];
- // var data = [ new Vector3(2,2,2), new Vector3(-2,-9,-2), new Vector3(1,0,1), new Vector3(2,0,1), new Vector3(0,0,0), new Vector3(1,1,1) ];
-
-declare var renderSphere: boolean;
-// var renderSphere = true;
+var surface = [
+    [8.83, 8.89, 8.81, 8.87, 8.9, 8.87],
+    [8.89, 8.94, 8.85, 8.94, 8.96, 8.92],
+    [8.84, 8.9, 8.82, 8.92, 8.93, 8.91],
+    [8.79, 8.85, 8.79, 8.9, 8.94, 8.92],
+    [8.79, 8.88, 8.81, 8.9, 8.95, 8.92],
+    [8.8, 8.82, 8.78, 8.91, 8.94, 8.92],
+    [8.75, 8.78, 8.77, 8.91, 8.95, 8.92],
+    [8.8, 8.8, 8.77, 8.91, 8.95, 8.94],
+    [8.74, 8.81, 8.76, 8.93, 8.98, 8.99],
+    [8.89, 8.99, 8.92, 9.1, 9.13, 9.11],
+    [8.97, 8.97, 8.91, 9.09, 9.11, 9.11],
+    [9.04, 9.08, 9.05, 9.25, 9.28, 9.27],
+    [9, 9.01, 9, 9.2, 9.23, 9.2],
+    [8.99, 8.99, 8.98, 9.18, 9.2, 9.19],
+    [8.93, 8.97, 8.97, 9.18, 9.2, 9.18]
+]
 
 var colors = [
 new Color( 0xffffff ),
@@ -92,9 +104,7 @@ new Color( 0x000000 )
   // Bind our event handlers
   window.addEventListener('resize', onWindowResize, false);
   
-  const graphinfo = new GraphInfo(data.map((v)=> {
-      return new Vector3(v.z, v.y, v.x);
-  }));
+  const graphinfo = new SurfaceInfo(surface);
   console.log(graphinfo);
   graph = PlaneHelper.addplane( graphinfo );
   graph.injectScene(scene);
@@ -112,11 +122,7 @@ new Color( 0x000000 )
   PlaneHelper.addxzaxis(graph.topbottom(), graph.scaleFactor);
   PlaneHelper.addyaxis(graph.therest(), graph.scaleFactor);
 
-  if (renderSphere) {
-      RenderHelper.renderSphere(scene, graphinfo, graph);
-  } else {
-      RenderHelper.renderPoints(scene, graphinfo, graph);
-  }
+  RenderHelper.renderSurface(scene, graphinfo, graph);
 
   // Kick off the render loop!
   update();
