@@ -321,7 +321,7 @@ export namespace PlaneHelper {
 			let count = 0;
 			for (let r of (xt.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksx[count], {scaleFactor: scaleFactor})
-				sprite.position.copy(r).add(offset.multiplyScalar(invert));
+				sprite.position.copy(r).add(offset.clone().multiplyScalar(invert));
 				xt.add(sprite);
 				average.add(sprite.position);
 				count++
@@ -336,7 +336,7 @@ export namespace PlaneHelper {
 			offset = new Vector3(0,-0.3,0.3 * direction);
 			for (let r of (xb.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksx[count], {scaleFactor: scaleFactor})
-				sprite.position.copy(r).add(offset.multiplyScalar(invert));
+				sprite.position.copy(r).add(offset.clone().multiplyScalar(invert));
 				xb.add(sprite);
 				average.add(sprite.position);
 				count++
@@ -355,7 +355,7 @@ export namespace PlaneHelper {
 			offset = new Vector3(-0.3,0,0.3 * direction);
 			for (let r of (yl.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksy[count], {scaleFactor: scaleFactor})
-				sprite.position.copy(r).add(offset.multiplyScalar(invert));
+				sprite.position.copy(r).add(offset.clone().multiplyScalar(invert));
 				average.add(sprite.position);
 				yl.add(sprite);
 				count++
@@ -368,7 +368,7 @@ export namespace PlaneHelper {
 			offset = new Vector3(0.3,0,0.3 * direction)
 			for (let r of (yr.geometry as Geometry).vertices) {
 				const sprite = makeTextSprite(ticksy[count], {scaleFactor: scaleFactor})
-				sprite.position.copy(r).add(offset.multiplyScalar(invert));
+				sprite.position.copy(r).add(offset.clone().multiplyScalar(invert));
 				yr.add(sprite);
 				average.add(sprite.position);
 				count++
