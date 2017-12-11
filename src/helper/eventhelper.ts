@@ -1,15 +1,16 @@
 import { Mesh, Vector2, Raycaster, Camera, Vector3, Quaternion, Object3D } from 'three'
 import makeTextSprite from './texthelper'
 import { Graph } from "./planehelper"
+import { ARDisplay, ARUtils } from 'three.ar.js';
 
 export interface ThreeEvent extends Event {
-  clientX: number;
-  clientY: number;
-  deltaY: number;
-  button: THREE.MOUSE;
-  touches: Array<Touch>;
-  keyCode: number;
-  pointerId: number;
+    clientX: number;
+    clientY: number;
+    deltaY: number;
+    button: THREE.MOUSE;
+    touches: Array<Touch>;
+    keyCode: number;
+    pointerId: number;
 }
 
 
@@ -18,12 +19,12 @@ export namespace EventHelper {
         INTERSECTED: Mesh;
         camera: Camera;
         graph: Graph;
-
+        
         constructor(camera: Camera, graph: Graph) {
             this.camera = camera;
             this.graph = graph;
         }
-
+        
         genrateOnTouch(this: GeneralThreeEvent) {
             return (e: ThreeEvent) => {
                 let mouse = new Vector2();
@@ -35,10 +36,10 @@ export namespace EventHelper {
                     mouse.x = (e.touches[0].pageX / window.innerWidth) * 2 - 1;
                     mouse.y = - (e.touches[0].pageY / window.innerHeight) * 2 + 1;
                 }
-
+                
                 let hideText = () => {
                     if (this.INTERSECTED)
-                        this.INTERSECTED.children.length > 0 && (this.INTERSECTED.children[0].visible = false);
+                    this.INTERSECTED.children.length > 0 && (this.INTERSECTED.children[0].visible = false);
                 }
                 
                 // find intersections
@@ -48,107 +49,143 @@ export namespace EventHelper {
                 console.log(intersects);
                 hideText();
                 
-                if (intersects.length > 0
-                    && this.INTERSECTED != intersects[0].object && 'oriData' in intersects[0].object.userData) {
-                        this.INTERSECTED = intersects[0].object as Mesh;
-                        const data = this.INTERSECTED.userData.oriData;
-                        if (this.INTERSECTED.children.length > 0) {
-                            this.INTERSECTED.children[0].visible = true;
-                            return;
-                        }
-                        const sprite = makeTextSprite(`x:${data.x}, y:${data.y}, z:${data.z}`, { fontsize: 12, scaleFactor: this.graph.scaleFactor, depthTest: false });
-                        sprite.position.add(new Vector3(0, 0.2, 0));
-                        this.INTERSECTED.add(sprite);
-                        
-                    } else {
-                        this.INTERSECTED = null;
+                if (intersects.length > 0 && this.INTERSECTED != intersects[0].object && 'oriData' in intersects[0].object.userData) {
+                    this.INTERSECTED = intersects[0].object as Mesh;
+                    const data = this.INTERSECTED.userData.oriData;
+                    if (this.INTERSECTED.children.length > 0) {
+                        this.INTERSECTED.children[0].visible = true;
+                        return;
                     }
-                   
+                    const sprite = makeTextSprite(`x:${data.x}, y:${data.y}, z:${data.z}`, { fontsize: 12, scaleFactor: this.graph.scaleFactor, depthTest: false });
+                    sprite.position.add(new Vector3(0, 0.2, 0));
+                    this.INTERSECTED.add(sprite);
+                    
+                } else {
+                    this.INTERSECTED = null;
+                }
+                
+            }
+        }
+    }
+    
+    export class ZoomableThreeEvent {
+        
+        prevDiff: number;
+        prevPos: Vector2;
+        camera: Camera;
+        graph: Graph;
+        domElement: HTMLElement | Document;
+        constructor(camera: Camera, graph: Graph) {
+            this.camera = camera;
+            this.graph = graph;
+        }
+        
+        
+        genrateOnTouch(this: ZoomableThreeEvent) {
+            let generalCallback = new GeneralThreeEvent(this.camera, this.graph).genrateOnTouch();
+            
+            return (e: ThreeEvent) => {
+                switch (e.touches.length) {
+                    case 1:
+                    generalCallback(e);
+                    this.prevPos = new Vector2(e.touches[0].clientX, e.touches[0].clientY);
+                    break;
+                    case 2:
+                    this.prevDiff = Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2) 
+                    break;
+                    default:
+                    // code...
+                    break;
                 }
             }
         }
-
-        export class ZoomableThreeEvent {
-            
-            prevDiff: number;
-            prevPos: Vector2;
-            camera: Camera;
-            graph: Graph;
-            domElement: HTMLElement | Document;
-            constructor(camera: Camera, graph: Graph) {
-                this.camera = camera;
-                this.graph = graph;
-            }
-            
-          
-            genrateOnTouch(this: ZoomableThreeEvent) {
-                let generalCallback = new GeneralThreeEvent(this.camera, this.graph).genrateOnTouch();
-                
-                return (e: ThreeEvent) => {
-                    switch (e.touches.length) {
-                        case 1:
-                            generalCallback(e);
-                            this.prevPos = new Vector2(e.touches[0].clientX, e.touches[0].clientY);
-                            break;
-                        case 2:
-                            this.prevDiff = Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2) 
-                            break;
-                        default:
-                            // code...
-                            break;
+        
+        generateOnMove(this: ZoomableThreeEvent) {
+            return (e: ThreeEvent) => {
+                if (e.touches.length == 1) {
+                    var element = this.domElement === document ? this.domElement.body : this.domElement as HTMLElement;
+                    element = element || document.body;
+                    let deltaX = Math.abs(e.touches[0].clientX - this.prevPos.x) / (element.clientWidth) 
+                    if (e.touches[0].clientX > this.prevPos.x) {
+                        
+                        this.graph.graph.rotateY(100/180 * Math.PI * deltaX)
+                    } else {
+                        this.graph.graph.rotateY(-100/180 * Math.PI * deltaX)
                     }
+                    let deltaY = Math.abs(e.touches[0].clientY - this.prevPos.y) / (element.clientHeight) 
+                    
+                    if (e.touches[0].clientY > this.prevPos.y) {
+                        this.graph.graph.translateY(-1 * deltaY)
+                    } else {
+                        this.graph.graph.translateY(1 * deltaY)
+                    }
+                    this.prevPos = new Vector2(e.touches[0].clientX, e.touches[0].clientY);
+                    
+                }
+                
+                if (e.touches.length == 2) {
+                    // Calculate the distance between the two pointers
+                    var curDiff = Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2);
+                    
+                    if (this.prevDiff > 0) {
+                        if (curDiff > this.prevDiff) {
+                            
+                            this.graph.graph.scale.multiplyScalar(1.05);
+                        }
+                        if (curDiff < this.prevDiff) {
+                            // The distance between the two pointers has decreased
+                            this.graph.graph.scale.multiplyScalar(0.95);
+                        }
+                    }
+                    this.prevDiff = curDiff;
+                    
                 }
             }
-
-            generateOnMove(this: ZoomableThreeEvent) {
-                return (e: ThreeEvent) => {
-                     if (e.touches.length == 1) {
-                         var element = this.domElement === document ? this.domElement.body : this.domElement as HTMLElement;
-                         element = element || document.body;
-                         let deltaX = Math.abs(e.touches[0].clientX - this.prevPos.x) / (element.clientWidth) 
-                         if (e.touches[0].clientX > this.prevPos.x) {
-
-                             this.graph.graph.rotateY(100/180 * Math.PI * deltaX)
-                         } else {
-                             this.graph.graph.rotateY(-100/180 * Math.PI * deltaX)
-                         }
-                         let deltaY = Math.abs(e.touches[0].clientY - this.prevPos.y) / (element.clientHeight) 
-
-                         if (e.touches[0].clientY > this.prevPos.y) {
-                             this.graph.graph.translateY(-1 * deltaY)
-                         } else {
-                             this.graph.graph.translateY(1 * deltaY)
-                         }
-                         this.prevPos = new Vector2(e.touches[0].clientX, e.touches[0].clientY);
-                        
-                     }
-
-                     if (e.touches.length == 2) {
-                       // Calculate the distance between the two pointers
-                       var curDiff = Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2);
-
-                       if (this.prevDiff > 0) {
-                         if (curDiff > this.prevDiff) {
-                        
-                           this.graph.graph.scale.multiplyScalar(1.05);
-                         }
-                         if (curDiff < this.prevDiff) {
-                           // The distance between the two pointers has decreased
-                           this.graph.graph.scale.multiplyScalar(0.95);
-                         }
-                       }
-                       this.prevDiff = curDiff;
-                       
-                     }
-                }
+        }
+        
+        generateOnUp(this: ZoomableThreeEvent) {
+            return (e: ThreeEvent) => {
+                
             }
-
-            generateOnUp(this: ZoomableThreeEvent) {
-                return (e: ThreeEvent) => {
-                     
-                }
-            }
-
-
+        }
+        
+        
     }
-}
+    
+    export class HitArEvent extends GeneralThreeEvent {
+        vrDisplay: ARDisplay;
+        constructor(camera: Camera, graph: Graph, vrDisplay: ARDisplay) {
+            super(camera, graph);
+            this.vrDisplay = vrDisplay;
+        }
+        
+        genrateOnTouch(this: HitArEvent){
+            return (e: ThreeEvent) => {
+                if (!e.touches[0]) {
+                    return;
+                }
+                // Inspect the event object and generate normalize screen coordinates
+                // (between 0 and 1) for the screen position.
+                var x = e.touches[0].pageX / window.innerWidth;
+                var y = e.touches[0].pageY / window.innerHeight;
+                // Send a ray from the point of click to the real world surface
+                // and attempt to find a hit. `hitTest` returns an array of potential
+                // hits.
+                var hits = this.vrDisplay.hitTest(x, y);
+                // If a hit is found, just use the first one
+                if (hits && hits.length) {
+                    var hit = hits[0];
+                    // Use the `placeObjectAtHit` utility to position
+                    // the cube where the hit occurred
+                    ARUtils.placeObjectAtHit(this.graph.graph,  // The object to place
+                        hit,   // The VRHit object to move the cube to
+                        1,     // Easing value from 0 to 1; we want to move
+                        // the cube directly to the hit position
+                        true); // Whether or not we also apply orientation
+                    }
+                    
+                    
+                }
+            }
+        }
+    }

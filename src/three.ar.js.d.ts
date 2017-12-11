@@ -1,8 +1,9 @@
-import { WebGLRenderer, Camera } from 'three'
+import { WebGLRenderer, Camera, Object3D } from 'three'
 
 export namespace ARUtils {
 	export function displayUnsupportedMessage(): any;
 	export function getARDisplay(): Promise<ARDisplay>;
+	export function placeObjectAtHit(object: Object3D, hit: any, easing: number, applyOrientation : boolean): void;
 }
 
 export class ARDisplay extends VRDisplay {
