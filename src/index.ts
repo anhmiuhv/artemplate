@@ -3,12 +3,12 @@ import {
 } from 'three'
 import { VRControls } from './vendor/VRControls'
 import { ARDisplay, ARDebug, ARUtils, ARPerspectiveCamera, ARView } from 'three.ar.js'
-import { PlaneHelper, Graph } from './helper/planehelper'
-import { GraphInfo } from './helper/datahelper'
-import { AnimationHelper } from './helper/animatehelper'
-import makeTextSprite from './helper/texthelper';
-import { RenderHelper } from './helper/renderhelper'
-import { EventHelper } from './helper/eventhelper'
+import { PlaneHelper, Graph } from 'argraph'
+import { GraphInfo } from 'argraph'
+import { AnimationHelper } from 'argraph'
+import { makeTextSprite } from 'argraph';
+import { RenderHelper } from 'argraph'
+import { EventHelper } from 'argraph'
 
 
 var vrDisplay: ARDisplay;
