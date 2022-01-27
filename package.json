@@ -33,7 +33,7 @@
     "@types/three": "^0.84.30",
     "argraph": "latest",
     "d3-scale": "^1.0.6",
-    "three": "^0.88.0",
+    "three": "^0.137.0",
     "three.ar.js": "^0.1.5"
   }
 }
